@@ -1,0 +1,34 @@
+id: APP-ACCESSDENIED-001
+title: Repeated Access Denied Responses From a Single Client
+status: enabled
+description: >
+  Detects ten or more HTTP 403/401 responses from the same source_ip against
+  the application within a 5-minute window, indicative of API scanning,
+  authorization brute-forcing, or a misconfigured client hammering a
+  protected endpoint.
+severity: medium
+tags:
+  - application
+  - discovery
+  - api-abuse
+references:
+  - https://attack.mitre.org/techniques/T1595/
+attack:
+  technique_id: T1595
+  technique_name: Active Scanning
+false_positive_notes: >
+  Misconfigured legitimate clients/integrations after a credential rotation
+  are a common false-positive source; check whether the source_ip maps to a
+  known internal service before escalating.
+logsource:
+  category: application
+detection:
+  denied_response:
+    event_type: application_request
+    status:
+      - 401
+      - 403
+  group_by:
+    - source_ip
+  timeframe: 5m
+  condition: "count(denied_response) >= 10"

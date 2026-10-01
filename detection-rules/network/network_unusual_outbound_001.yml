@@ -1,0 +1,34 @@
+id: NETWORK-OUTBOUND-001
+title: Unusual Outbound Connection to Rarely-Used Destination Port
+status: enabled
+description: >
+  Detects outbound network connections from a host to a destination port
+  that this host has used in fewer than 1% of its outbound connections over
+  the prior 14-day baseline, above a minimum volume threshold to avoid
+  flagging genuinely rare-but-normal traffic.
+severity: medium
+tags:
+  - network
+  - exfiltration
+  - c2
+references:
+  - https://attack.mitre.org/techniques/T1071/
+attack:
+  technique_id: T1071
+  technique_name: Application Layer Protocol
+false_positive_notes: >
+  New legitimate services, one-off admin tooling, or software updates using
+  a new port will also match; correlate with process context and
+  destination reputation before escalating.
+logsource:
+  category: network
+detection:
+  outbound_connection:
+    event_type: network_connection
+    direction: outbound
+  baseline:
+    field: destination_port
+    scope: hostname
+    window: 14d
+    min_observations: 100
+  condition: "outbound_connection.destination_port_frequency(baseline) < 0.01"

@@ -1,0 +1,33 @@
+id: ENDPOINT-POWERSHELL-001
+title: Suspicious Encoded PowerShell Execution
+status: enabled
+description: >
+  Detects PowerShell execution with command-line flags commonly used to
+  evade logging or execute obfuscated payloads (-enc / -EncodedCommand,
+  -WindowStyle Hidden, -NoProfile combined with -ExecutionPolicy Bypass).
+severity: high
+tags:
+  - endpoint
+  - execution
+  - powershell
+references:
+  - https://attack.mitre.org/techniques/T1059/001/
+attack:
+  technique_id: T1059.001
+  technique_name: PowerShell
+false_positive_notes: >
+  Some legitimate deployment/configuration-management tooling (e.g.
+  configuration scripts pushed via RMM tools) uses encoded commands; verify
+  process lineage (parent process) before treating as confirmed malicious.
+logsource:
+  category: endpoint
+detection:
+  process_execution:
+    event_type: process_start
+    process_name: powershell.exe
+  command_line_patterns:
+    - "-enc"
+    - "-EncodedCommand"
+    - "-WindowStyle Hidden"
+    - "-ExecutionPolicy Bypass"
+  condition: "process_execution.command_line matches any command_line_patterns"

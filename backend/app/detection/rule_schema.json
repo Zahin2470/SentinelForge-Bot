@@ -1,0 +1,64 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "SentinelForge Detection Rule",
+  "description": "Sigma-style, backend-agnostic detection rule. See docs/detection-engine.md.",
+  "type": "object",
+  "required": [
+    "id",
+    "title",
+    "status",
+    "description",
+    "severity",
+    "tags",
+    "attack",
+    "logsource",
+    "detection"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Z0-9]+(-[A-Z0-9]+)*-[0-9]{3}$",
+      "description": "e.g. AUTH-BRUTEFORCE-001"
+    },
+    "title": { "type": "string", "minLength": 5 },
+    "status": { "type": "string", "enum": ["enabled", "disabled", "experimental"] },
+    "description": { "type": "string", "minLength": 10 },
+    "severity": { "type": "string", "enum": ["low", "medium", "high", "critical"] },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 1
+    },
+    "references": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "attack": {
+      "type": "object",
+      "required": ["technique_id", "technique_name"],
+      "properties": {
+        "technique_id": { "type": "string", "pattern": "^T[0-9]{4}(\\.[0-9]{3})?$" },
+        "technique_name": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "false_positive_notes": { "type": "string" },
+    "logsource": {
+      "type": "object",
+      "required": ["category"],
+      "properties": {
+        "category": {
+          "type": "string",
+          "enum": ["authentication", "endpoint", "network", "cloud", "application", "correlation"]
+        }
+      },
+      "additionalProperties": true
+    },
+    "detection": {
+      "type": "object",
+      "description": "Backend-agnostic detection logic; interpreted by app/detection/executor.py.",
+      "minProperties": 1
+    }
+  }
+}

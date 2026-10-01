@@ -1,0 +1,35 @@
+id: AUTH-BRUTEFORCE-001
+title: Repeated Failed Authentication Followed by Success
+status: enabled
+description: >
+  Detects five or more failed authentication attempts for the same
+  username/source_ip pair within a 10-minute window, followed by a
+  successful authentication for that same username.
+severity: high
+tags:
+  - authentication
+  - brute-force
+  - credential-access
+references:
+  - https://attack.mitre.org/techniques/T1110/
+attack:
+  technique_id: T1110
+  technique_name: Brute Force
+false_positive_notes: >
+  Shared NAT/VPN egress IPs can produce bursts of failed logins from
+  multiple legitimate users behind the same address; correlate on
+  username, not source_ip, alone when triaging.
+logsource:
+  category: authentication
+detection:
+  failed_login:
+    event_type: authentication
+    status: failure
+  successful_login:
+    event_type: authentication
+    status: success
+  group_by:
+    - username
+    - source_ip
+  timeframe: 10m
+  condition: "count(failed_login) >= 5 followed_by successful_login"

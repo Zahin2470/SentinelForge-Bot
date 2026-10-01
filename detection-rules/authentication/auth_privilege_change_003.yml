@@ -1,0 +1,33 @@
+id: AUTH-PRIVCHANGE-003
+title: Privilege Modification Shortly After New-IP Login
+status: enabled
+description: >
+  Detects a privilege modification (role/group change) event occurring
+  within 15 minutes of a successful login from a previously unseen source
+  IP for the same username. Designed to chain with AUTH-NEWLOGINIP-002 in
+  the correlation engine.
+severity: high
+tags:
+  - authentication
+  - privilege-escalation
+references:
+  - https://attack.mitre.org/techniques/T1098/
+attack:
+  technique_id: T1098
+  technique_name: Account Manipulation
+false_positive_notes: >
+  Legitimate administrators changing networks (e.g. VPN split, travel) and
+  then performing scheduled privileged maintenance will also match; the
+  alternative explanation should always be surfaced by the AI analyst,
+  never suppressed.
+logsource:
+  category: authentication
+detection:
+  new_ip_login:
+    rule_ref: AUTH-NEWLOGINIP-002
+  privilege_change:
+    event_type: privilege_modification
+  group_by:
+    - username
+  timeframe: 15m
+  condition: "new_ip_login followed_by privilege_change"

@@ -1,0 +1,30 @@
+id: CLOUD-SECCONTROL-001
+title: Security Logging or MFA Control Disabled in Cloud Audit Trail
+status: enabled
+description: >
+  Detects a cloud audit event indicating a security control was disabled —
+  logging/monitoring turned off, MFA requirement removed, or a security
+  group opened to 0.0.0.0/0 for an administrative port.
+severity: critical
+tags:
+  - cloud
+  - defense-evasion
+references:
+  - https://attack.mitre.org/techniques/T1562/
+attack:
+  technique_id: T1562
+  technique_name: Impair Defenses
+false_positive_notes: >
+  Legitimate infrastructure-as-code changes during planned maintenance
+  windows can match; check for an associated approved change ticket before
+  treating as confirmed malicious.
+logsource:
+  category: cloud
+detection:
+  audit_event:
+    event_type: cloud_audit
+    action:
+      - disable_logging
+      - remove_mfa_requirement
+      - open_admin_port_public
+  condition: "audit_event"

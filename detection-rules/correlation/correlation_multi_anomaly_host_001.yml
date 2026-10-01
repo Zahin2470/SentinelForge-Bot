@@ -1,0 +1,29 @@
+id: CORRELATION-MULTIHOST-001
+title: Multiple Distinct Detections Associated With a Single Host
+status: enabled
+description: >
+  Meta-rule consumed by the correlation engine (not the primary detection
+  executor): when three or more distinct rule IDs match events tied to the
+  same hostname within a 30-minute window, this raises correlation_score
+  and is a strong signal to create/escalate an incident rather than leaving
+  the matches as separate unrelated alerts.
+severity: high
+tags:
+  - correlation
+  - meta-rule
+references: []
+attack:
+  technique_id: T1499
+  technique_name: Endpoint Denial of Service
+false_positive_notes: >
+  This is intentionally broad by design — it exists to surface *candidate*
+  incidents for the correlation engine and AI analyst to evaluate, not to
+  independently confirm malicious activity. Treat a match as "investigate,"
+  not "confirmed."
+logsource:
+  category: correlation
+detection:
+  distinct_rule_matches:
+    scope: hostname
+    timeframe: 30m
+  condition: "count(distinct distinct_rule_matches.rule_id) >= 3"

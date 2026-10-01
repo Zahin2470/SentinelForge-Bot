@@ -1,0 +1,31 @@
+id: AUTH-NEWLOGINIP-002
+title: Successful Authentication From Previously Unseen Source IP
+status: enabled
+description: >
+  Detects a successful authentication event where the source IP has not
+  been observed for this username in the prior 30-day baseline window.
+severity: medium
+tags:
+  - authentication
+  - new-ip
+  - anomaly
+references:
+  - https://attack.mitre.org/techniques/T1078/
+attack:
+  technique_id: T1078
+  technique_name: Valid Accounts
+false_positive_notes: >
+  Legitimate travel, new devices, or ISP address rotation can trigger this;
+  low severity on its own, but raises correlation_score meaningfully when
+  combined with other rule matches for the same entity.
+logsource:
+  category: authentication
+detection:
+  successful_login:
+    event_type: authentication
+    status: success
+  baseline:
+    field: source_ip
+    scope: username
+    window: 30d
+  condition: "successful_login.source_ip not in baseline"
