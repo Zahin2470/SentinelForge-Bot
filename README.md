@@ -2,17 +2,23 @@
 
 **AI-Powered Security Operations Center — Detect → Correlate → Investigate → Explain**
 
-> ⚠️ **Status: scaffolding / Phase 0–1.** What's implemented and actually
-> tested right now: the full architecture/security/ML/agent/evaluation docs,
-> the repo skeleton, the SQLAlchemy data model + an initial Alembic
-> migration (hand-written, not yet run against a live DB), a FastAPI health
-> endpoint, 8 example Sigma-style detection rules, and a working detection
-> **executor** with passing positive/negative tests for 4 condition types
-> (see `docs/detection-engine.md` for exactly what it does and doesn't
-> support yet). The dashboard, correlation engine, ML training pipeline,
-> RAG, and the agent's tool implementations are not built yet — see
-> `docs/architecture/architecture.md`'s "Development Phases" for what's
-> next. Nothing below is asserted without a test behind it.
+> ⚠️ **Status: scaffolding / Phase 2.** What's implemented and actually
+> tested right now: full architecture/security/ML/agent/evaluation docs;
+> the repo skeleton; the SQLAlchemy data model + an initial Alembic
+> migration (hand-written, not yet run against a live DB); a FastAPI app
+> with health, event ingestion, event search, detection-rule listing, a
+> manual detection-run endpoint, and alert listing; source normalizers for
+> 5 log formats; a rule-type detection executor; and a synthetic scenario
+> pipeline proving raw events → normalize → detect works correctly
+> end-to-end. **36 tests pass in this environment** (detection engine,
+> normalizer, and a full scenario replay run without a database — the
+> DB-backed repository/service/API layer is written and reviewed but
+> unverified by execution here, since this dev environment has no network
+> to install Postgres/SQLAlchemy). The dashboard, correlation engine, ML
+> training pipeline, RAG, and the agent's tool implementations are not
+> built yet — see `docs/architecture/architecture.md`'s "Development
+> Phases" for what's next. Nothing below is asserted without a test behind
+> it.
 
 ## What this is
 

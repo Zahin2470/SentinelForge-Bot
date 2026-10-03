@@ -44,6 +44,8 @@ services:
       - ./backend:/app
       - ./detection-rules:/app/detection-rules:ro
       - ./knowledge-base:/app/knowledge-base:ro
+      - ./simulator:/app/simulator:ro
+      - ./scenarios:/app/scenarios:ro
     depends_on:
       postgres:
         condition: service_healthy
@@ -64,6 +66,8 @@ services:
       - ./backend:/app
       - ./detection-rules:/app/detection-rules:ro
       - ./knowledge-base:/app/knowledge-base:ro
+      - ./simulator:/app/simulator:ro
+      - ./scenarios:/app/scenarios:ro
     depends_on:
       postgres:
         condition: service_healthy
