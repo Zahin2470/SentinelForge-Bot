@@ -138,7 +138,7 @@ The LLM never receives raw database access or shell access. Every tool call
 is logged with the run ID, incident ID, user, tool name, and a summary of
 the result.
 
-## 7. Risk scoring model (detail in `docs/architecture/risk-scoring.md` — TODO)
+## 7. Risk scoring model (detail in `docs/architecture/risk-scoring.md`)
 
 ```
 final_risk_score = f(

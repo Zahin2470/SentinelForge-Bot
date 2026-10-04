@@ -30,6 +30,7 @@ for p in (_REPO_ROOT, _REPO_ROOT / "backend"):
 from app.core.db import SessionLocal  # noqa: E402
 from app.core.logging import configure_logging, get_logger  # noqa: E402
 from app.schemas.security_event import IngestEventRequest  # noqa: E402
+from app.services.correlation_service import CorrelationService  # noqa: E402
 from app.services.detection_service import DetectionService  # noqa: E402
 from app.services.ingestion_service import IngestionService  # noqa: E402
 from simulator.scenarios import Scenario, get_scenario  # noqa: E402
@@ -79,6 +80,15 @@ def replay(scenario: Scenario) -> int:
             exit_code = 1
         if not missing and not unexpected:
             print("\n✅ PASS — detection results match the scenario's ground truth.")
+
+        incidents = CorrelationService().run_correlation(db)
+        db.commit()
+        print(f"\nIncidents created: {len(incidents)}")
+        for incident in incidents:
+            print(
+                f"  {incident.display_id} — {incident.title} "
+                f"(severity={incident.severity}, risk={incident.final_risk_score})"
+            )
 
     except Exception:
         db.rollback()
