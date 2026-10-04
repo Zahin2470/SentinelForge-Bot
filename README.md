@@ -2,27 +2,31 @@
 
 **AI-Powered Security Operations Center — Detect → Correlate → Investigate → Explain**
 
-> ⚠️ **Status: scaffolding / Phase 4.** What's implemented and actually
+> ⚠️ **Status: scaffolding / Phase 5.** What's implemented and actually
 > tested right now: full architecture/security/ML/agent/evaluation docs;
 > the repo skeleton; the SQLAlchemy data model + an initial Alembic
 > migration (hand-written, not yet run against a live DB); a FastAPI app
 > with health, event ingestion/search, detection-rule listing + manual run,
-> alert listing, and incident listing + manual correlation-run endpoints;
-> source normalizers for 5 log formats; a rule-type detection executor; a
-> pure entity+temporal correlation engine; a transparent, renormalizing
-> risk-scoring model; and a synthetic scenario pipeline proving the full
-> chain — raw events → normalize → detect → correlate → risk-score — works
-> correctly end-to-end, down to an exact asserted risk-score value.
-> **56 tests pass in this environment**, all actually executed (detection
-> engine, correlation engine, risk scoring, normalizer, and a full
-> multi-stage scenario replay, all run without a database — the DB-backed
-> repository/service/API layer is written and reviewed but unverified by
-> execution here, since this dev environment has no network to install
-> Postgres/SQLAlchemy/FastAPI). The dashboard, ML pipeline, RAG, and the
-> agent's tool implementations are not built yet — see
+> alert listing, incident listing + manual correlation-run, and ML
+> scoring endpoints; source normalizers for 5 log formats; a rule-type
+> detection executor; a pure entity+temporal correlation engine; a
+> transparent, renormalizing risk-scoring model; **a real trained
+> Isolation Forest anomaly model** (feature extraction, training,
+> persistence, and evaluation — not a stub); and a synthetic scenario
+> pipeline proving the full chain — raw events → normalize → detect →
+> correlate → risk-score — works correctly end-to-end, down to an exact
+> asserted risk-score value. **72 tests pass in this environment**, all
+> actually executed, including tests that train and score real sklearn
+> models and assert the resulting precision/recall numbers (detection
+> engine, correlation engine, risk scoring, normalizer, ML feature
+> extraction + model training, and a full multi-stage scenario replay —
+> the DB-backed repository/service/API layer is written and reviewed but
+> unverified by execution here, since this dev environment has no network
+> to install
+> Postgres/SQLAlchemy/FastAPI). The dashboard, RAG, and the agent's tool
+> implementations are not built yet — see
 > `docs/architecture/architecture.md`'s "Development Phases" for what's
 > next. Nothing below is asserted without a test behind it.
-> it.
 
 ## What this is
 

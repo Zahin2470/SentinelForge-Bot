@@ -14,16 +14,26 @@ Metrics:
 - Precision, recall, F1 per rule and in aggregate
 - False-positive rate
 
-## 2. Anomaly detection (ML) evaluation
+## 2. Anomaly detection (ML) evaluation ✅ implemented
 
-Dataset: the same scenario library, since Isolation Forest is unsupervised
-at training time but our synthetic scenarios carry ground-truth anomaly
-labels for evaluation purposes.
+Dataset: `app/ml/synthetic.py` generates labeled entity-level feature rows
+directly (benign + three anomalous behavior patterns), separately from the
+raw-event `scenarios/` library used for rule evaluation above — training an
+ML model needs hundreds-to-thousands of examples, and generating that
+volume through the full raw-event → normalize → feature-extraction path
+would be slow without testing anything the ingestion tests don't already
+cover. Isolation Forest trains on benign rows only (unsupervised, matching
+production reality); the labeled anomalous rows exist only to evaluate
+against, never to fit the model.
 
-Metrics:
-- Precision, recall
-- PR-AUC (more informative than ROC-AUC under class imbalance, which anomaly
-  detection always has)
+Metrics (real numbers from `make train-ml`, see `docs/ml/ml-pipeline.md`
+§7 for the full breakdown and honest discussion of where the model is
+weak):
+- Precision: 0.962, Recall: 0.500, PR-AUC: 0.820 (aggregate)
+- Recall varies sharply by attack pattern — 0.99 for brute force, down to
+  0.09 for impossible-travel-style credential sharing. Reporting only the
+  aggregate would hide that gap; `docs/ml/ml-pipeline.md` §7 reports it
+  broken down on purpose.
 
 ## 3. Agent evaluation
 

@@ -54,6 +54,7 @@ class Settings(BaseSettings):
     # Detection rules location (mounted read-only in docker-compose.yml)
     detection_rules_path: str = Field(default="detection-rules", alias="DETECTION_RULES_PATH")
     knowledge_base_path: str = Field(default="knowledge-base", alias="KNOWLEDGE_BASE_PATH")
+    ml_models_path: str = Field(default="ml/models", alias="ML_MODELS_PATH")
 
 
 @lru_cache

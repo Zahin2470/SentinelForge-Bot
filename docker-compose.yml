@@ -46,6 +46,7 @@ services:
       - ./knowledge-base:/app/knowledge-base:ro
       - ./simulator:/app/simulator:ro
       - ./scenarios:/app/scenarios:ro
+      - ./ml:/app/ml
     depends_on:
       postgres:
         condition: service_healthy
@@ -68,6 +69,7 @@ services:
       - ./knowledge-base:/app/knowledge-base:ro
       - ./simulator:/app/simulator:ro
       - ./scenarios:/app/scenarios:ro
+      - ./ml:/app/ml
     depends_on:
       postgres:
         condition: service_healthy
