@@ -8,7 +8,7 @@ makes it easy to audit the API surface.
 
 from fastapi import APIRouter
 
-from app.api import alerts, detection_rules, events, health, incidents, ml
+from app.api import alerts, attack, detection_rules, events, health, incidents, ml, threat_intel
 
 api_router = APIRouter()
 api_router.include_router(health.router)
@@ -17,5 +17,7 @@ api_router.include_router(detection_rules.router)
 api_router.include_router(alerts.router)
 api_router.include_router(incidents.router)
 api_router.include_router(ml.router)
+api_router.include_router(threat_intel.router)
+api_router.include_router(attack.router)
 
 # Phase 8+: api_router.include_router(agent.router, prefix="/api/v1/agent", ...)

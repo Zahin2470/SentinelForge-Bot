@@ -6,6 +6,7 @@ from app.services.risk_scoring import (
     rule_score_from_alerts,
     score_to_severity,
     severity_to_score,
+    threat_intelligence_score_from_alerts,
 )
 
 
@@ -79,6 +80,21 @@ def test_compute_risk_score_all_none_returns_none() -> None:
     assert score is None
 
 
+def test_threat_intelligence_score_from_alerts_no_ti_alerts_returns_none() -> None:
+    alerts = [{"source": "rule", "severity": "high"}, {"source": "ml", "severity": "critical"}]
+    assert threat_intelligence_score_from_alerts(alerts) is None
+
+
+def test_threat_intelligence_score_from_alerts_takes_max_ti_severity() -> None:
+    alerts = [
+        {"source": "rule", "severity": "critical"},  # ignored — not threat_intel sourced
+        {"source": "threat_intel", "severity": "low"},
+        {"source": "threat_intel", "severity": "medium"},
+    ]
+    score = threat_intelligence_score_from_alerts(alerts)
+    assert score == severity_to_score("medium")
+
+
 def test_score_to_severity_bands() -> None:
     assert score_to_severity(0.9) == "critical"
     assert score_to_severity(0.85) == "critical"
@@ -96,5 +112,7 @@ if __name__ == "__main__":
     test_compute_risk_score_renormalizes_when_components_missing()
     test_compute_risk_score_two_components_weighted_correctly()
     test_compute_risk_score_all_none_returns_none()
+    test_threat_intelligence_score_from_alerts_no_ti_alerts_returns_none()
+    test_threat_intelligence_score_from_alerts_takes_max_ti_severity()
     test_score_to_severity_bands()
     print("All risk scoring tests passed.")

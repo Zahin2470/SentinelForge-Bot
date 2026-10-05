@@ -28,6 +28,7 @@ from app.services.risk_scoring import (
     compute_risk_score,
     correlation_score_from_group_size,
     rule_score_from_alerts,
+    threat_intelligence_score_from_alerts,
 )
 
 logger = get_logger(__name__)
@@ -41,6 +42,7 @@ def _alert_to_dict(alert: Alert) -> dict:
         "entity_hostname": alert.entity_hostname,
         "severity": alert.severity,
         "matched_event_ids": alert.matched_event_ids,
+        "source": alert.source,
     }
 
 
@@ -90,15 +92,18 @@ class CorrelationService:
             if asset:
                 asset_criticality_score = asset.criticality_score
 
-        # anomaly_score, threat_intelligence_score, identity_context_score
-        # are not yet computable — Phase 5 (ML) and Phase 6 (threat intel)
-        # haven't landed. Left as None rather than faked, and
-        # compute_risk_score renormalizes over what's actually available.
+        # anomaly_score, identity_context_score are not yet computable —
+        # Phase 5 (ML) creates anomaly-sourced alerts but doesn't yet feed
+        # a per-incident anomaly_score into this component (the ML alert's
+        # own anomaly_score isn't aggregated here yet); identity_context
+        # depends on the behavioral-baseline service, which doesn't exist.
+        # Both left as None rather than faked — compute_risk_score
+        # renormalizes over what's actually available.
         components = {
             "rule_score": rule_score,
             "anomaly_score": None,
             "correlation_score": correlation_score,
-            "threat_intelligence_score": None,
+            "threat_intelligence_score": threat_intelligence_score_from_alerts(group),
             "asset_criticality_score": asset_criticality_score,
             "identity_context_score": None,
         }

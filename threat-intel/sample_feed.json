@@ -1,0 +1,62 @@
+{
+  "type": "bundle",
+  "id": "bundle--sentinelforge-sample-feed-2026",
+  "objects": [
+    {
+      "type": "indicator",
+      "id": "indicator--0001",
+      "created": "2026-01-01T00:00:00Z",
+      "created_by_ref": "sample-feed",
+      "valid_from": "2026-01-01T00:00:00Z",
+      "pattern": "[ipv4-addr:value = '198.51.100.23']",
+      "labels": ["malicious-activity"],
+      "confidence": 85,
+      "indicator_types": ["malicious-activity"],
+      "name": "Known brute-force source IP (sample feed)",
+      "external_references": [
+        {"source_name": "mitre-attack", "external_id": "T1110"}
+      ]
+    },
+    {
+      "type": "indicator",
+      "id": "indicator--0002",
+      "created": "2026-01-01T00:00:00Z",
+      "created_by_ref": "sample-feed",
+      "valid_from": "2025-11-15T00:00:00Z",
+      "pattern": "[domain-name:value = 'evil-c2-domain.example']",
+      "labels": ["malicious-activity"],
+      "confidence": 90,
+      "indicator_types": ["malicious-activity"],
+      "name": "Sample known C2 domain",
+      "external_references": [
+        {"source_name": "mitre-attack", "external_id": "T1071"}
+      ]
+    },
+    {
+      "type": "indicator",
+      "id": "indicator--0003",
+      "created": "2026-01-01T00:00:00Z",
+      "created_by_ref": "sample-feed",
+      "valid_from": "2025-12-01T00:00:00Z",
+      "pattern": "[file:hashes.'SHA-256' = 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b85']",
+      "labels": ["suspicious-activity"],
+      "confidence": 60,
+      "indicator_types": ["suspicious-activity"],
+      "name": "Sample suspicious file hash",
+      "external_references": []
+    },
+    {
+      "type": "indicator",
+      "id": "indicator--0004",
+      "created": "2026-01-01T00:00:00Z",
+      "created_by_ref": "sample-feed",
+      "valid_from": "2025-10-01T00:00:00Z",
+      "pattern": "[ipv4-addr:value = '203.0.113.99' OR ipv4-addr:value = '203.0.113.100']",
+      "labels": ["anomalous-activity"],
+      "confidence": 40,
+      "indicator_types": ["anomalous-activity"],
+      "name": "Sample multi-value pattern (intentionally unsupported by the simplified normalizer)",
+      "external_references": []
+    }
+  ]
+}

@@ -45,6 +45,20 @@ def correlation_score_from_group_size(alert_count: int) -> float:
     return min(1.0, max(0, alert_count - 1) * 0.2)
 
 
+def threat_intelligence_score_from_alerts(alerts: list[dict]) -> float | None:
+    """Highest severity among the incident's threat-intel-sourced alerts
+    (Alert.source == "threat_intel", created by
+    app.services.threat_intel_service when a known IOC matches an event).
+    Returns None — not 0 — when none of the correlated alerts came from a
+    threat-intel match, the same way rule_score_from_alerts distinguishes
+    "nothing to score" from "scored and it's low"; compute_risk_score
+    renormalizes over None components rather than treating them as zero."""
+    ti_severities = [a["severity"] for a in alerts if a.get("source") == "threat_intel"]
+    if not ti_severities:
+        return None
+    return max(severity_to_score(s) for s in ti_severities)
+
+
 def compute_risk_score(components: dict[str, float | None]) -> float | None:
     """Renormalized weighted average over whatever components are actually
     available. Returns None only if every component is None (nothing to

@@ -14,6 +14,7 @@ backend/ (for `app`):
 from __future__ import annotations
 
 import itertools
+import json
 import sys
 from pathlib import Path
 
@@ -30,7 +31,10 @@ from app.services.risk_scoring import (  # noqa: E402
     compute_risk_score,
     correlation_score_from_group_size,
     rule_score_from_alerts,
+    threat_intelligence_score_from_alerts,
 )
+from app.threat_intel.matcher import find_ioc_matches  # noqa: E402
+from app.threat_intel.stix_normalizer import normalize_stix_indicator, UnsupportedStixPattern  # noqa: E402
 from simulator.scenarios import get_scenario  # noqa: E402
 
 _id_counter = itertools.count(1)
@@ -93,8 +97,12 @@ def _alerts_from_detection(scenario_name: str) -> list[dict]:
         event = normalize(source_format, raw)
         event["id"] = f"evt-{next(_id_counter)}"
         normalized_events.append(event)
-    events_by_id = {e["id"]: e for e in normalized_events}
 
+    return _alerts_from_detection_from_events(normalized_events)
+
+
+def _alerts_from_detection_from_events(normalized_events: list[dict]) -> list[dict]:
+    events_by_id = {e["id"]: e for e in normalized_events}
     rules = load_rules_from_dir("detection-rules", only_enabled=True)
 
     alerts = []
@@ -169,9 +177,73 @@ def test_full_pipeline_benign_scenario_produces_no_alerts_to_correlate() -> None
     assert correlate_alerts(alerts) == []
 
 
+def _load_sample_iocs() -> list[dict]:
+    with open("threat-intel/sample_feed.json") as f:
+        bundle = json.load(f)
+    iocs = []
+    for obj in bundle["objects"]:
+        if obj.get("type") != "indicator":
+            continue
+        try:
+            ioc = normalize_stix_indicator(obj)
+        except UnsupportedStixPattern:
+            continue  # honestly skipped, same as the real import path
+        ioc["id"] = obj["id"]
+        iocs.append(ioc)
+    return iocs
+
+
+def test_threat_intel_matching_adds_a_third_alert_to_the_same_incident() -> None:
+    """Full Phase 3-6 chain in memory: detect -> ML n/a here (needs a
+    trained model file) -> threat-intel IOC match -> correlate. The sample
+    feed's known-malicious IP indicator (198.51.100.23) is exactly the
+    brute-force scenario's attacker IP, so it should produce a third alert
+    that correlates into the SAME incident as the rule-sourced alerts
+    (same entity: hostname corp-vpn-gw / username jdoe), and
+    threat_intelligence_score should be populated as a result."""
+    scenario = get_scenario("brute_force_privilege_escalation")
+
+    normalized_events = []
+    for source_format, raw in scenario.events:
+        event = normalize(source_format, raw)
+        event["id"] = f"evt-{next(_id_counter)}"
+        normalized_events.append(event)
+    events_by_id = {e["id"]: e for e in normalized_events}
+
+    rule_alerts = _alerts_from_detection_from_events(normalized_events)
+
+    iocs = _load_sample_iocs()
+    assert len(iocs) == 3  # 3 of 4 sample indicators parse; the 4th is an intentionally unsupported OR pattern
+
+    ioc_matches = find_ioc_matches(normalized_events, iocs)
+    assert len(ioc_matches) >= 1, "expected the sample feed's known attacker IP to match the scenario"
+
+    ti_alert_events = [events_by_id[m.event_id] for m in ioc_matches]
+    ti_alert = {
+        "id": "alert-threat-intel-1",
+        "created_at": max(e["timestamp"] for e in ti_alert_events),
+        "entity_username": next((e["username"] for e in ti_alert_events if e.get("username")), None),
+        "entity_hostname": next((e["hostname"] for e in ti_alert_events if e.get("hostname")), None),
+        "severity": "critical",  # the matched indicator's threat_level is "high" -> critical severity
+        "source": "threat_intel",
+    }
+
+    all_alerts = [{**a, "source": "rule"} for a in rule_alerts] + [ti_alert]
+    groups = correlate_alerts(all_alerts)
+
+    assert len(groups) == 1, f"expected the threat-intel alert to join the existing incident, got {len(groups)} groups"
+    group = groups[0]
+    assert len(group) == 3
+
+    ti_score = threat_intelligence_score_from_alerts(group)
+    assert ti_score is not None
+    assert ti_score == 1.0  # severity_to_score("critical")
+
+
 if __name__ == "__main__":
     test_brute_force_scenario_matches_ground_truth()
     test_benign_scenario_triggers_nothing()
     test_full_pipeline_correlates_brute_force_alerts_into_one_incident()
     test_full_pipeline_benign_scenario_produces_no_alerts_to_correlate()
+    test_threat_intel_matching_adds_a_third_alert_to_the_same_incident()
     print("All end-to-end scenario pipeline tests passed.")

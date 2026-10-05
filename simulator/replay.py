@@ -33,6 +33,8 @@ from app.schemas.security_event import IngestEventRequest  # noqa: E402
 from app.services.correlation_service import CorrelationService  # noqa: E402
 from app.services.detection_service import DetectionService  # noqa: E402
 from app.services.ingestion_service import IngestionService  # noqa: E402
+from app.services.ml_scoring_service import MLScoringService, ModelNotAvailable  # noqa: E402
+from app.services.threat_intel_service import ThreatIntelService  # noqa: E402
 from simulator.scenarios import Scenario, get_scenario  # noqa: E402
 
 configure_logging()
@@ -80,6 +82,31 @@ def replay(scenario: Scenario) -> int:
             exit_code = 1
         if not missing and not unexpected:
             print("\n✅ PASS — detection results match the scenario's ground truth.")
+
+        try:
+            ml_results = MLScoringService().run_scoring(db)
+            db.commit()
+            alerted = [r for r in ml_results if r["alerted"]]
+            print(f"\nML scoring: {len(ml_results)} entities scored, {len(alerted)} alerted")
+            for r in alerted:
+                print(f"  entity={r['entity']} score={r['score']:.3f}")
+        except ModelNotAvailable as exc:
+            print(f"\nML scoring skipped: {exc}")
+
+        ti_service = ThreatIntelService()
+        feed_path = _REPO_ROOT / "threat-intel" / "sample_feed.json"
+        import_result = ti_service.import_feed(db, feed_path)
+        db.commit()
+        print(
+            f"\nThreat intel feed imported: {import_result['imported']} IOCs "
+            f"({import_result['skipped']} unsupported patterns skipped honestly)"
+        )
+
+        ti_matches = ti_service.run_matching(db)
+        db.commit()
+        print(f"\nThreat intel matches: {len(ti_matches)} alert(s) created")
+        for m in ti_matches:
+            print(f"  {m['ioc_type']}:{m['ioc_value']} matched {m['matched_event_count']} event(s)")
 
         incidents = CorrelationService().run_correlation(db)
         db.commit()
