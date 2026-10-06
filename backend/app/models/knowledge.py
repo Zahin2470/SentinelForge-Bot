@@ -16,12 +16,12 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.db import Base
 from app.models.base import UUIDPrimaryKeyMixin
+from app.rag.constants import EMBEDDING_DIM
 
 # Matches the dimensionality of the configured EmbeddingProvider
-# (docs/ai/ai-agent.md §2). Mock/local providers used in tests must also
-# produce vectors of this length so the schema stays consistent across
-# environments.
-EMBEDDING_DIM = 1536
+# (app/rag/embeddings.py, docs/ai/ai-agent.md §2). Re-exported here (rather
+# than only importing it) so existing code that does
+# `from app.models.knowledge import EMBEDDING_DIM` keeps working.
 
 
 class KnowledgeDocument(UUIDPrimaryKeyMixin, Base):

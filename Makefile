@@ -32,5 +32,14 @@ evaluate: ## Run detection / ML / agent evaluation suite
 train-ml: ## Retrain the anomaly detection model
 	docker compose exec backend python scripts/train_anomaly_model.py
 
+ingest-knowledge-base: ## Chunk, embed, and store the RAG knowledge base
+	docker compose exec backend python scripts/ingest_knowledge_base.py
+
+import-attack-data: ## Seed MITRE ATT&CK reference data
+	docker compose exec backend python scripts/import_attack_data.py
+
+import-threat-intel: ## Import the sample threat intelligence feed
+	docker compose exec backend python -c "from app.core.db import SessionLocal; from app.services.threat_intel_service import ThreatIntelService; db = SessionLocal(); print(ThreatIntelService().import_feed(db, 'threat-intel/sample_feed.json')); db.commit()"
+
 clean: ## Tear down containers and volumes
 	docker compose down -v
