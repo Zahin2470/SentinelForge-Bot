@@ -2,42 +2,44 @@
 
 **AI-Powered Security Operations Center — Detect → Correlate → Investigate → Explain**
 
-> ⚠️ **Status: scaffolding / Phase 7.** What's implemented and actually
+> ⚠️ **Status: scaffolding / Phase 8.** What's implemented and actually
 > tested right now: full architecture/security/ML/agent/evaluation docs;
 > the repo skeleton; the SQLAlchemy data model + an initial Alembic
 > migration (hand-written, not yet run against a live DB); a FastAPI app
 > with health, event ingestion/search, detection-rule listing + manual run,
 > alert listing, incident listing + manual correlation-run, ML scoring,
-> threat-intel import/match, ATT&CK coverage, and RAG search/ingest
-> endpoints; source normalizers for 5 log formats; a rule-type detection
-> executor; a pure entity+temporal correlation engine; a transparent,
-> renormalizing risk-scoring model; **a real trained Isolation Forest
-> anomaly model** (feature extraction, training, persistence, and
-> evaluation — not a stub); a curated MITRE ATT&CK mapping + coverage
-> calculator; a simplified-but-honest STIX indicator normalizer and IOC
-> matcher; **a working RAG pipeline** (chunking, a real offline TF-IDF
-> embedding provider, cosine retrieval, citation validation) over 6 real
-> knowledge-base documents; and a synthetic scenario pipeline proving the
-> full chain — raw events → normalize → detect → ML-score →
-> threat-intel-match → correlate → risk-score — works correctly
-> end-to-end, down to an exact asserted risk score. **136 tests pass in
-> this environment**, all actually executed, including tests that train
-> and score real sklearn models and assert the resulting precision/recall
-> numbers, tests that proved (and led to fixing) two genuine TF-IDF
-> retrieval weaknesses against the real knowledge base
-> (`docs/rag.md` §4), and one that proves a known-bad IP from a sample
-> threat-intel feed correctly joins the same incident as a rule-sourced
-> brute-force alert (detection engine, correlation engine, risk scoring,
-> normalizer, ML feature extraction + model training, ATT&CK
-> mapping/coverage, STIX normalization, IOC matching, RAG chunking/
-> embedding/retrieval/citation, and a full multi-stage scenario replay —
-> the DB-backed repository/service/API layer is written and reviewed but
+> threat-intel import/match, ATT&CK coverage, RAG search/ingest, and an
+> AI-agent investigation endpoint; source normalizers for 5 log formats; a
+> rule-type detection executor; a pure entity+temporal correlation engine;
+> a transparent, renormalizing risk-scoring model; **a real trained
+> Isolation Forest anomaly model**; a curated MITRE ATT&CK mapping +
+> coverage calculator; a simplified-but-honest STIX indicator normalizer
+> and IOC matcher; **a working RAG pipeline** (chunking, real offline
+> TF-IDF embeddings, cosine retrieval, citation validation) over 6 real
+> knowledge-base documents; and **a working AI SOC Analyst agent** — state
+> machine, hard resource limits, a tool registry with per-call
+> authorization, evidence-grounding validation that rejects fabricated
+> citations, and a retry-then-fail-cleanly output-validation loop, proven
+> end-to-end by a capstone test that runs a full scripted investigation
+> over real pipeline data (real detection alerts, a real threat-intel IOC
+> match, real RAG retrieval) and produces a validated, evidence-grounded
+> investigation report. **178 tests pass in this environment**, all
+> actually executed. Building the agent's capstone test surfaced and fixed
+> a real chunking bug — a document's title/metadata text was being
+> silently dropped during chunking, which meant `search_security_knowledge`
+> couldn't find the brute-force playbook when asked about brute force
+> (`docs/rag.md` §4 has the full story, including the earlier TF-IDF
+> retrieval weaknesses found the same way). This chain — a bug the
+> pipeline's own real data exposed, that a synthetic unit test wouldn't
+> have caught — is exactly why these tests run against real content
+> instead of hand-picked fixtures wherever possible. The DB-backed
+> repository/service/API layer (and the real Anthropic/OpenAI/local LLM
+> providers, which need network access) are written and reviewed but
 > unverified by execution here, since this dev environment has no network
-> to install
-> Postgres/SQLAlchemy/FastAPI). The dashboard and the agent's tool
-> implementations are not built yet — see
-> `docs/architecture/architecture.md`'s "Development Phases" for what's
-> next. Nothing below is asserted without a test behind it.
+> to install Postgres/SQLAlchemy/FastAPI or reach an LLM API. The
+> dashboard is not built yet — see `docs/architecture/architecture.md`'s
+> "Development Phases" for what's next. Nothing below is asserted without
+> a test behind it.
 
 ## What this is
 

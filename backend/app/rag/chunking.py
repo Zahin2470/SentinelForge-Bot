@@ -56,12 +56,27 @@ def _split_by_headers(text: str) -> list[tuple[str | None, str]]:
         body = text[start:end].strip()
 
         if level == 1:
-            # H1 is the document title — fold its section into the next
-            # real content rather than emitting a near-empty chunk.
-            preamble = f"{preamble}\n\n{match.group(0)}".strip() if preamble else match.group(0)
+            # H1 is the document title — fold BOTH its header line and its
+            # body (e.g. "**Category:** ..." / "**Applies to:** ..."
+            # metadata lines, which carry real retrieval-relevant content
+            # like technique IDs) into preamble, rather than discarding
+            # the body entirely.
+            combined = f"{match.group(0)}\n\n{body}".strip() if body else match.group(0)
+            preamble = f"{preamble}\n\n{combined}".strip() if preamble else combined
             continue
 
-        full_body = f"{preamble}\n\n{body}".strip() if preamble and i == 0 else body
+        if body:
+            full_body = f"{preamble}\n\n{body}".strip() if preamble else body
+            preamble = ""  # consumed by the first section that actually has content
+        else:
+            # No body of its own (e.g. an H2 umbrella heading whose only
+            # content lives in H3 children below it) — leave full_body
+            # empty so it falls back to the bare header line below, which
+            # is what the header-only-merges-forward pass in
+            # chunk_document() detects. Preamble is deliberately NOT
+            # consumed here — it carries forward to whichever section
+            # actually has content first.
+            full_body = ""
         sections.append((title, full_body if full_body else match.group(0)))
 
     if not sections:  # document had only an H1, no subsections

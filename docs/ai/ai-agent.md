@@ -1,5 +1,24 @@
 # AI SOC Analyst — Agent Design
 
+> ✅ **Implementation status**: every mechanism described in this document
+> is implemented in `backend/app/agents/` and covered by 42 passing tests
+> (`backend/tests/agents/`, plus the capstone
+> `tests/test_agent_investigation.py`) — state machine transitions, hard
+> resource limits, the tool registry with per-call authorization, evidence
+> grounding, and the retry-then-fail-cleanly output validation path are
+> all real, executed code, not just this design doc. What's *not*
+> executable in this offline dev environment: the real `AnthropicProvider`
+> / `OpenAIProvider` / `LocalProvider` implementations (§2) need network
+> access and are honest stubs that raise `ProviderUnavailable`, and
+> `build_default_registry`'s DB-wired tools (vs. the in-memory
+> `build_test_registry` the tests use) are written and reviewed but
+> unexecuted, same caveat as every other DB-touching layer in this repo.
+> The capstone test proves the *entire* orchestration loop — including
+> every tool call actually going through `app.rag`'s real TF-IDF
+> retrieval, `app.threat_intel`'s real IOC matcher, and the real detection
+> pipeline's output — end to end, with a scripted `MockLLMProvider`
+> standing in only for the model call itself.
+
 ## 1. Role
 
 The AI SOC Analyst is a tool-using assistant that investigates an incident

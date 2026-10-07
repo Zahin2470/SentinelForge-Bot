@@ -22,6 +22,7 @@ from sqlalchemy import select  # noqa: E402
 
 from app.core.db import SessionLocal  # noqa: E402
 from app.core.logging import configure_logging, get_logger  # noqa: E402
+from app.core.permissions import PERMISSIONS, ROLE_PERMISSIONS  # noqa: E402
 from app.models.asset import Asset, AssetCriticality  # noqa: E402
 from app.models.user import Permission, Role, RoleName, User  # noqa: E402
 
@@ -34,37 +35,12 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 # never run against anything but a local dev database.
 DEMO_PASSWORD = "sentinelforge-demo-2026"
 
-PERMISSIONS = [
-    ("incidents:read", "View incidents"),
-    ("incidents:write", "Update/resolve incidents"),
-    ("detection_rules:read", "View detection rules"),
-    ("detection_rules:write", "Enable/disable/edit detection rules"),
-    ("threat_intel:write", "Manage IOCs and threat intelligence"),
-    ("ai_copilot:use", "Trigger AI SOC Analyst investigations"),
-    ("admin:settings", "Manage users, roles, and system settings"),
-]
-
-ROLE_PERMISSIONS = {
-    RoleName.ADMIN: [p[0] for p in PERMISSIONS],  # everything
-    RoleName.SECURITY_MANAGER: [
-        "incidents:read",
-        "incidents:write",
-        "detection_rules:read",
-        "detection_rules:write",
-        "threat_intel:write",
-        "ai_copilot:use",
-    ],
-    RoleName.SOC_ANALYST: [
-        "incidents:read",
-        "incidents:write",
-        "detection_rules:read",
-        "ai_copilot:use",
-    ],
-    RoleName.VIEWER: [
-        "incidents:read",
-        "detection_rules:read",
-    ],
-}
+# PERMISSIONS and ROLE_PERMISSIONS come from app.core.permissions — the
+# single source of truth (also used by app/agents/tools.py's authorization
+# checks), so what gets seeded here and what the agent actually enforces
+# can never silently drift apart. ROLE_PERMISSIONS there is keyed by plain
+# role-name strings; RoleName[key] below converts to the enum this script
+# needs for the DB row.
 
 DEMO_USERS = [
     (RoleName.ADMIN, "admin@sentinelforge.local", "Demo Admin"),
