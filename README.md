@@ -2,7 +2,7 @@
 
 **AI-Powered Security Operations Center — Detect → Correlate → Investigate → Explain**
 
-> ⚠️ **Status: scaffolding / Phase 8.** What's implemented and actually
+> ⚠️ **Status: scaffolding / Phase 9.** What's implemented and actually
 > tested right now: full architecture/security/ML/agent/evaluation docs;
 > the repo skeleton; the SQLAlchemy data model + an initial Alembic
 > migration (hand-written, not yet run against a live DB); a FastAPI app
@@ -16,30 +16,34 @@
 > coverage calculator; a simplified-but-honest STIX indicator normalizer
 > and IOC matcher; **a working RAG pipeline** (chunking, real offline
 > TF-IDF embeddings, cosine retrieval, citation validation) over 6 real
-> knowledge-base documents; and **a working AI SOC Analyst agent** — state
+> knowledge-base documents; **a working AI SOC Analyst agent** — state
 > machine, hard resource limits, a tool registry with per-call
 > authorization, evidence-grounding validation that rejects fabricated
 > citations, and a retry-then-fail-cleanly output-validation loop, proven
 > end-to-end by a capstone test that runs a full scripted investigation
-> over real pipeline data (real detection alerts, a real threat-intel IOC
-> match, real RAG retrieval) and produces a validated, evidence-grounded
-> investigation report. **178 tests pass in this environment**, all
-> actually executed. Building the agent's capstone test surfaced and fixed
-> a real chunking bug — a document's title/metadata text was being
-> silently dropped during chunking, which meant `search_security_knowledge`
-> couldn't find the brute-force playbook when asked about brute force
-> (`docs/rag.md` §4 has the full story, including the earlier TF-IDF
-> retrieval weaknesses found the same way). This chain — a bug the
-> pipeline's own real data exposed, that a synthetic unit test wouldn't
-> have caught — is exactly why these tests run against real content
-> instead of hand-picked fixtures wherever possible. The DB-backed
-> repository/service/API layer (and the real Anthropic/OpenAI/local LLM
-> providers, which need network access) are written and reviewed but
-> unverified by execution here, since this dev environment has no network
-> to install Postgres/SQLAlchemy/FastAPI or reach an LLM API. The
-> dashboard is not built yet — see `docs/architecture/architecture.md`'s
-> "Development Phases" for what's next. Nothing below is asserted without
-> a test behind it.
+> over real pipeline data; and **a full Next.js/TypeScript/Tailwind
+> dashboard** — command-center layout, live alert/incident tables, a
+> transparent per-component risk-score breakdown, an ATT&CK coverage
+> matrix, a per-incident investigation panel wired to the AI agent, and a
+> knowledge-base search copilot — with every AI-generated report visually
+> distinguished from ground-truth system data. **178 backend tests + 37
+> frontend render tests pass in this environment**, all actually executed.
+> Building the agent's capstone test surfaced and fixed a real chunking
+> bug — a document's title/metadata text was being silently dropped during
+> chunking, which meant `search_security_knowledge` couldn't find the
+> brute-force playbook when asked about brute force (`docs/rag.md` §4 has
+> the full story, including the earlier TF-IDF retrieval weaknesses found
+> the same way). This chain — a bug the pipeline's own real data exposed,
+> that a synthetic unit test wouldn't have caught — is exactly why these
+> tests run against real content instead of hand-picked fixtures wherever
+> possible. The DB-backed repository/service/API layer, the real
+> Anthropic/OpenAI/local LLM providers, and the frontend's actual
+> `next dev`/`next build` (no network to `npm install` `next` itself, only
+> the render tests could run — see `frontend/README.md` for exactly what
+> that does and doesn't prove) are written and reviewed but unverified by
+> execution here. See `docs/architecture/architecture.md`'s "Development
+> Phases" for what's next. Nothing below is asserted without a test behind
+> it.
 
 ## What this is
 

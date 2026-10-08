@@ -41,5 +41,8 @@ import-attack-data: ## Seed MITRE ATT&CK reference data
 import-threat-intel: ## Import the sample threat intelligence feed
 	docker compose exec backend python -c "from app.core.db import SessionLocal; from app.services.threat_intel_service import ThreatIntelService; db = SessionLocal(); print(ThreatIntelService().import_feed(db, 'threat-intel/sample_feed.json')); db.commit()"
 
+sync-detection-rules: ## Index detection-rules/*.yml into the database
+	docker compose exec backend python scripts/sync_detection_rules.py
+
 clean: ## Tear down containers and volumes
 	docker compose down -v
